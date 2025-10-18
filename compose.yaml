@@ -1,0 +1,28 @@
+services:
+  rabbitmq:
+    image: 'rabbitmq:4.1.4'
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-myuser}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-secret}
+    ports:
+      - '5672:5672'
+  ollama:
+    build:
+      context: .
+      dockerfile: Dockerfile_llama3
+    ports:
+      - '11434:11434'
+    volumes:
+      - ollama-models:/root/.ollama
+  discord-messages-llm-moderator:
+    build: .
+    image: 'arkadiusz97/discord-messages-llm-moderator:latest'
+    environment:
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-myuser}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-secret}
+    depends_on:
+      - rabbitmq
+      - ollama
+volumes:
+  ollama-models:

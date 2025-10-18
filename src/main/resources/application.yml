@@ -1,0 +1,32 @@
+app:
+  discord-bot-token: ${DISCORD_BOT_TOKEN}
+  queue-name: discord-messages-llm-moderator-queue
+  queue-prefetch-count: 1
+  system-command: Check a message for netiquette violations, such as using offensive language, attacks, or harassment.
+    Only flag messages that are clearly inappropriate.
+    Do not flag messages that are fragments of words unless they are explicitly offensive.
+logging:
+  level:
+    com:
+      github:
+        arkadiusz97:
+          discordmessagesllmmoderator: DEBUG
+spring:
+  ai:
+    ollama:
+      base-url: http://ollama:11434
+      chat:
+        options:
+          model: llama3
+          temperature: 0.1
+      #currently pull-model-strategy cannot be used due to problems with ollama's /api/pull endpoint
+      #temporary workaround applied to Dockerfile_llama3
+      #init:
+        #pull-model-strategy: always
+        #timeout: 60m
+  rabbitmq:
+    host: rabbitmq
+    username: ${RABBITMQ_DEFAULT_USER}
+    password: ${RABBITMQ_DEFAULT_PASS}
+  application:
+    name: discord-messages-llm-moderator
