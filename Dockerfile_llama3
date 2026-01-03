@@ -1,4 +1,0 @@
-FROM ollama/ollama
-EXPOSE 11434
-# this only temporary workaround, because of problems with Ollama's /api/pull endpoint
-RUN nohup bash -c "ollama serve &" && sleep 5 && ollama pull llama3

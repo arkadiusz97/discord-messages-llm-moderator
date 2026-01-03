@@ -19,11 +19,9 @@ spring:
         options:
           model: llama3
           temperature: 0.1
-      #currently pull-model-strategy cannot be used due to problems with ollama's /api/pull endpoint
-      #temporary workaround applied to Dockerfile_llama3
-      #init:
-        #pull-model-strategy: always
-        #timeout: 60m
+      init:
+        pull-model-strategy: always
+        timeout: 60m
   rabbitmq:
     host: rabbitmq
     username: ${RABBITMQ_DEFAULT_USER}

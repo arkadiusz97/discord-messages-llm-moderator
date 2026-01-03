@@ -15,7 +15,7 @@ import static org.mockito.Mockito.*;
         "app.system-command=command"
 })
 @ExtendWith(MockitoExtension.class)
-public class OllamaClientTest {
+public class DefaultClientTest {
 
     @Test
     public void shouldSendPrompt() {
@@ -33,9 +33,9 @@ public class OllamaClientTest {
         var expected = new PromptResponse(false, "output message");
         when(callResponseSpec.entity(PromptResponse.class)).thenReturn(expected);
 
-        var ollamaClient = new OllamaClient(builder, "command");
+        var defaultClient = new DefaultClient(builder, "command");
 
-        PromptResponse result = ollamaClient.sendPrompt(new PromptRequest(inputMessage));
+        PromptResponse result = defaultClient.sendPrompt(new PromptRequest(inputMessage));
 
         assertThat(result).isEqualTo(expected);
         verify(chatClient, times(1)).prompt(inputMessage);

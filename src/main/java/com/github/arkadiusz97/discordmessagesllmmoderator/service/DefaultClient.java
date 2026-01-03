@@ -7,11 +7,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
-public class OllamaClient implements LlmClient {
+public class DefaultClient implements LlmClient {
 
     private final ChatClient chatClient;
 
-    public OllamaClient(ChatClient.Builder chatClientBuilder, @Value("${app.system-command}") String systemCommand) {
+    public DefaultClient(ChatClient.Builder chatClientBuilder, @Value("${app.system-command}") String systemCommand) {
         this.chatClient = chatClientBuilder
                 .defaultSystem(systemCommand)
                 .build();
