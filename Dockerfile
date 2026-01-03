@@ -1,7 +1,4 @@
 FROM amazoncorretto:25.0.1 AS builder
-RUN --mount=type=secret,id=discord_bot_token \
-    --mount=type=secret,id=rabbitmq_default_user \
-    --mount=type=secret,id=rabbitmq_default_pass
 WORKDIR /usr/src/app
 RUN dnf install -y findutils
 COPY build.gradle gradlew settings.gradle ./
