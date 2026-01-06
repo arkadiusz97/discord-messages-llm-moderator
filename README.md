@@ -19,13 +19,11 @@ docker compose up -d
 Take into account that the first run could take some time, because LLM has to be downloaded.
 
 ## Example improvements, which can be done
+* Add unit test for QueueListener class.
 * Consider using other llm, which consumes fewer resources or gives more accurate responses.
 * Consider tune prompt for analyzing messages.
 * Add checking attachments in messages.
-* Add sending notifications to a specified Discord channel for server's moderators about deleted messages.
 * Add option for a not deleting message, but only sending notifications through for example email or message to a specified channel on a server.
-* Implement multithreading support. Currently, all messages are processed in one thread one by one.
-The use of virtual threads should be considered.
 
 ### License
 The application is licensed under the MIT license.

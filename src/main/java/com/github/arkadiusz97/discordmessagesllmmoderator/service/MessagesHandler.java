@@ -9,7 +9,6 @@ import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.channel.MessageChannel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
 import org.springframework.stereotype.Service;
@@ -25,8 +24,7 @@ public class MessagesHandler {
     private final LlmClient llmClient;
     private final GatewayDiscordClient gatewayDiscordClient;
 
-    @RabbitListener(queues = "${app.queue-name}")
-    public void listen(QueueMessage in, Message message, Channel channel) throws Exception {
+    public void handle(QueueMessage in, Message message, Channel channel) throws Exception {
         log.debug("Message content: {}", in.messageContent());
         log.debug("Message id: {}", in.messageId());
         log.debug("Channel id: {}", in.channelId());

@@ -1,7 +1,9 @@
 app:
   discord-bot-token: ${DISCORD_BOT_TOKEN}
   queue-name: discord-messages-llm-moderator-queue
-  queue-prefetch-count: 1
+  queue-prefetch-count: 2
+  thread-pool-size-for-messages-handler: 2
+  rest-client-timeout-seconds: 60
   system-command: Check a message for netiquette violations, such as using offensive language, attacks, or harassment.
     Only flag messages that are clearly inappropriate.
     Do not flag messages that are fragments of words unless they are explicitly offensive.

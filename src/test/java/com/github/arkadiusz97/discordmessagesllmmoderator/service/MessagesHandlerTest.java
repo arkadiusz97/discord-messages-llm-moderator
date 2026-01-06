@@ -59,7 +59,7 @@ public class MessagesHandlerTest {
         when(llmClient.sendPrompt(new PromptRequest(messageContent)))
                 .thenReturn(new PromptResponse(false, null));
 
-        messagesHandler.listen(in, message, channel);
+        messagesHandler.handle(in, message, channel);
 
         verify(channel, times(1)).basicAck(deliveryTag, false);
         verifyNoMoreInteractions(channel);
@@ -92,7 +92,7 @@ public class MessagesHandlerTest {
                 .thenReturn(Mono.just(messageChannel));
         when(discordMessage.delete()).thenReturn(Mono.empty());
 
-        messagesHandler.listen(in, rabbitmqMessage, rabbitmqChannel);
+        messagesHandler.handle(in, rabbitmqMessage, rabbitmqChannel);
 
         verify(rabbitmqChannel, times(1)).basicAck(deliveryTag, false);
         verifyNoMoreInteractions(rabbitmqChannel);
@@ -122,7 +122,7 @@ public class MessagesHandlerTest {
                 .thenThrow(RuntimeException.class);
 
         assertThrows(DiscordMessagesLlmModeratorException.class,
-                () -> messagesHandler.listen(in, rabbitmqMessage, rabbitmqChannel)
+                () -> messagesHandler.handle(in, rabbitmqMessage, rabbitmqChannel)
         );
 
         verify(rabbitmqChannel, times(1)).basicNack(deliveryTag, false, true);
@@ -151,7 +151,7 @@ public class MessagesHandlerTest {
                 .thenReturn(Mono.error(new IOException()));
         doThrow(IOException.class).when(rabbitmqChannel).basicNack(deliveryTag, false, true);
 
-        messagesHandler.listen(in, rabbitmqMessage, rabbitmqChannel);
+        messagesHandler.handle(in, rabbitmqMessage, rabbitmqChannel);
 
         verify(rabbitmqChannel, times(1)).basicNack(deliveryTag, false, true);
         assertThrows(IOException.class,
@@ -189,7 +189,7 @@ public class MessagesHandlerTest {
         when(discordMessage.delete()).thenReturn(Mono.empty());
         doThrow(IOException.class).when(rabbitmqChannel).basicAck(deliveryTag, false);
 
-        messagesHandler.listen(in, rabbitmqMessage, rabbitmqChannel);
+        messagesHandler.handle(in, rabbitmqMessage, rabbitmqChannel);
 
         verify(rabbitmqChannel, times(1)).basicAck(deliveryTag, false);
         assertThrows(IOException.class,
