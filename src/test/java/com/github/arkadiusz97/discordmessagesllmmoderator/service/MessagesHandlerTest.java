@@ -8,7 +8,6 @@ import com.rabbitmq.client.Channel;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.channel.MessageChannel;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -38,11 +37,6 @@ public class MessagesHandlerTest {
 
     @Mock
     private GatewayDiscordClient gatewayDiscordClient;
-
-    @BeforeEach
-    public void init() {
-        messagesHandler = new MessagesHandler(llmClient, gatewayDiscordClient);
-    }
 
     @Test
     public void handleMessageSuccessfully_whenDoesNotBreakRules() throws Exception {

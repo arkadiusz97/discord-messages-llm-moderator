@@ -8,8 +8,11 @@ import discord4j.core.object.entity.Message;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.test.util.ReflectionTestUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -19,15 +22,22 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 public class MessagesListenerTest {
 
+    @InjectMocks
+    private MessagesListener messagesListener;
+
+    @Mock
+    private GatewayDiscordClient gatewayDiscordClient;
+
+    @Mock
+    private RabbitTemplate rabbitTemplate;
+
     @Test
-    public void shouldSubscribeMessageCreateEventAndLogoutAtTheEnd() throws Exception {
+    public void shouldSubscribeMessageCreateEventAndLogoutAtTheEnd() {
+        var queue = "test-queue";
+        ReflectionTestUtils.setField(messagesListener, "queueName", queue);
         var messageContent = "message";
         var channelId = 1L;
         var messageId = 2L;
-        var queue = "test-queue";
-
-        var client = mock(GatewayDiscordClient.class);
-        var rabbitTemplate = mock(RabbitTemplate.class);
 
         var message = mock(Message.class);
         when(message.getContent()).thenReturn(messageContent);
@@ -37,12 +47,10 @@ public class MessagesListenerTest {
         var event = mock(MessageCreateEvent.class);
         when(event.getMessage()).thenReturn(message);
 
-        when(client.on(MessageCreateEvent.class)).thenReturn(Flux.just(event));
+        when(gatewayDiscordClient.on(MessageCreateEvent.class)).thenReturn(Flux.just(event));
 
         var logout = mock(Mono.class);
-        when(client.logout()).thenReturn(logout);
-
-        var messagesListener = new MessagesListener(rabbitTemplate, client, queue);
+        when(gatewayDiscordClient.logout()).thenReturn(logout);
 
         messagesListener.init();
         messagesListener.shutdown();
