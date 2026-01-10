@@ -27,10 +27,10 @@ import static org.mockito.Mockito.*;
         "app.queue-name=discord-messages-llm-moderator-queue",
 })
 @ExtendWith(MockitoExtension.class)
-public class MessagesHandlerTest {
+public class DiscordMessagesHandlerTest {
 
     @InjectMocks
-    private MessagesHandler messagesHandler;
+    private DiscordMessagesHandler discordMessagesHandler;
 
     @Mock
     private LlmClient llmClient;
@@ -38,24 +38,27 @@ public class MessagesHandlerTest {
     @Mock
     private GatewayDiscordClient gatewayDiscordClient;
 
+    private static final String MESSAGE_CONTENT = "message";
+    private static final Long CHANNEL_ID = 1L;
+    private static final Long MESSAGE_ID = 2L;
+    private static final Long DELIVERY_TAG = 3L;
+
     @Test
     public void handleMessageSuccessfully_whenDoesNotBreakRules() throws Exception {
-        var messageContent = "message";
-        var in = new QueueMessage(messageContent, 1L, 2L);
+        var in = new QueueMessage(MESSAGE_CONTENT, CHANNEL_ID, MESSAGE_ID);
 
-        var deliveryTag = 3L;
         var messageProperties = new MessageProperties();
-        messageProperties.setDeliveryTag(deliveryTag);
-        var message = new Message(messageContent.getBytes(), messageProperties);
+        messageProperties.setDeliveryTag(DELIVERY_TAG);
+        var message = new Message(MESSAGE_CONTENT.getBytes(), messageProperties);
 
         var channel = mock(Channel.class);
 
-        when(llmClient.sendPrompt(new PromptRequest(messageContent)))
+        when(llmClient.sendPrompt(new PromptRequest(MESSAGE_CONTENT)))
                 .thenReturn(new PromptResponse(false, null));
 
-        messagesHandler.handle(in, message, channel);
+        discordMessagesHandler.handle(in, message, channel);
 
-        verify(channel, times(1)).basicAck(deliveryTag, false);
+        verify(channel, times(1)).basicAck(DELIVERY_TAG, false);
         verifyNoMoreInteractions(channel);
 
         verifyNoInteractions(gatewayDiscordClient);
@@ -63,35 +66,31 @@ public class MessagesHandlerTest {
 
     @Test
     public void handleMessageSuccessfully_whenBreaksRules() throws Exception {
-        var messageContent = "message";
-        var channelId = 1L;
-        var messageId = 2L;
-        var in = new QueueMessage(messageContent, channelId, messageId);
+        var in = new QueueMessage(MESSAGE_CONTENT, CHANNEL_ID, MESSAGE_ID);
 
-        var deliveryTag = 3L;
         var messageProperties = new MessageProperties();
-        messageProperties.setDeliveryTag(deliveryTag);
-        var rabbitmqMessage = new Message(messageContent.getBytes(), messageProperties);
+        messageProperties.setDeliveryTag(DELIVERY_TAG);
+        var rabbitmqMessage = new Message(MESSAGE_CONTENT.getBytes(), messageProperties);
 
         var rabbitmqChannel = mock(Channel.class);
 
         var discordMessage = mock(discord4j.core.object.entity.Message.class);
         var messageChannel = mock(MessageChannel.class);
 
-        when(messageChannel.getMessageById(Snowflake.of(messageId)))
+        when(messageChannel.getMessageById(Snowflake.of(MESSAGE_ID)))
                 .thenReturn(Mono.just(discordMessage));
-        when(llmClient.sendPrompt(new PromptRequest(messageContent)))
+        when(llmClient.sendPrompt(new PromptRequest(MESSAGE_CONTENT)))
                 .thenReturn(new PromptResponse(true, "reason"));
-        when(gatewayDiscordClient.getChannelById(Snowflake.of(channelId)))
+        when(gatewayDiscordClient.getChannelById(Snowflake.of(CHANNEL_ID)))
                 .thenReturn(Mono.just(messageChannel));
         when(discordMessage.delete()).thenReturn(Mono.empty());
 
-        messagesHandler.handle(in, rabbitmqMessage, rabbitmqChannel);
+        discordMessagesHandler.handle(in, rabbitmqMessage, rabbitmqChannel);
 
-        verify(rabbitmqChannel, times(1)).basicAck(deliveryTag, false);
+        verify(rabbitmqChannel, times(1)).basicAck(DELIVERY_TAG, false);
         verifyNoMoreInteractions(rabbitmqChannel);
 
-        verify(gatewayDiscordClient, times(1)).getChannelById(Snowflake.of(channelId));
+        verify(gatewayDiscordClient, times(1)).getChannelById(Snowflake.of(CHANNEL_ID));
         verifyNoMoreInteractions(gatewayDiscordClient);
 
         verify(discordMessage, times(1)).delete();
@@ -100,26 +99,22 @@ public class MessagesHandlerTest {
 
     @Test
     public void negativeAcknowledge_whenLlmClientThrowsException() throws Exception {
-        var messageContent = "message";
-        var channelId = 1L;
-        var messageId = 2L;
-        var in = new QueueMessage(messageContent, channelId, messageId);
+        var in = new QueueMessage(MESSAGE_CONTENT, CHANNEL_ID, MESSAGE_ID);
 
-        var deliveryTag = 3L;
         var messageProperties = new MessageProperties();
-        messageProperties.setDeliveryTag(deliveryTag);
-        var rabbitmqMessage = new Message(messageContent.getBytes(), messageProperties);
+        messageProperties.setDeliveryTag(DELIVERY_TAG);
+        var rabbitmqMessage = new Message(MESSAGE_CONTENT.getBytes(), messageProperties);
 
         var rabbitmqChannel = mock(Channel.class);
 
-        when(llmClient.sendPrompt(new PromptRequest(messageContent)))
+        when(llmClient.sendPrompt(new PromptRequest(MESSAGE_CONTENT)))
                 .thenThrow(RuntimeException.class);
 
         assertThrows(DiscordMessagesLlmModeratorException.class,
-                () -> messagesHandler.handle(in, rabbitmqMessage, rabbitmqChannel)
+                () -> discordMessagesHandler.handle(in, rabbitmqMessage, rabbitmqChannel)
         );
 
-        verify(rabbitmqChannel, times(1)).basicNack(deliveryTag, false, true);
+        verify(rabbitmqChannel, times(1)).basicNack(DELIVERY_TAG, false, true);
         verifyNoMoreInteractions(rabbitmqChannel);
 
         verifyNoInteractions(gatewayDiscordClient);
@@ -127,71 +122,63 @@ public class MessagesHandlerTest {
 
     @Test
     public void throwsException_whenGatewayDiscordClientAndBasicNackThrowException() throws Exception {
-        var messageContent = "message";
-        var channelId = 1L;
-        var messageId = 2L;
-        var in = new QueueMessage(messageContent, channelId, messageId);
+        var in = new QueueMessage(MESSAGE_CONTENT, CHANNEL_ID, MESSAGE_ID);
 
-        var deliveryTag = 3L;
         var messageProperties = new MessageProperties();
-        messageProperties.setDeliveryTag(deliveryTag);
-        var rabbitmqMessage = new Message(messageContent.getBytes(), messageProperties);
+        messageProperties.setDeliveryTag(DELIVERY_TAG);
+        var rabbitmqMessage = new Message(MESSAGE_CONTENT.getBytes(), messageProperties);
 
         var rabbitmqChannel = mock(Channel.class);
 
-        when(llmClient.sendPrompt(new PromptRequest(messageContent)))
+        when(llmClient.sendPrompt(new PromptRequest(MESSAGE_CONTENT)))
                 .thenReturn(new PromptResponse(true, "reason"));
-        when(gatewayDiscordClient.getChannelById(Snowflake.of(channelId)))
+        when(gatewayDiscordClient.getChannelById(Snowflake.of(CHANNEL_ID)))
                 .thenReturn(Mono.error(new IOException()));
-        doThrow(IOException.class).when(rabbitmqChannel).basicNack(deliveryTag, false, true);
+        doThrow(IOException.class).when(rabbitmqChannel).basicNack(DELIVERY_TAG, false, true);
 
-        messagesHandler.handle(in, rabbitmqMessage, rabbitmqChannel);
+        discordMessagesHandler.handle(in, rabbitmqMessage, rabbitmqChannel);
 
-        verify(rabbitmqChannel, times(1)).basicNack(deliveryTag, false, true);
+        verify(rabbitmqChannel, times(1)).basicNack(DELIVERY_TAG, false, true);
         assertThrows(IOException.class,
-                () -> rabbitmqChannel.basicNack(deliveryTag, false, true)
+                () -> rabbitmqChannel.basicNack(DELIVERY_TAG, false, true)
         );
         verifyNoMoreInteractions(rabbitmqChannel);
 
-        verify(gatewayDiscordClient, times(1)).getChannelById(Snowflake.of(channelId));
+        verify(gatewayDiscordClient, times(1)).getChannelById(Snowflake.of(CHANNEL_ID));
         verifyNoMoreInteractions(gatewayDiscordClient);
     }
 
     @Test
     public void throwsException_whenGatewayDiscordClientAndBasicAckThrowException() throws Exception {
-        var messageContent = "message";
-        var channelId = 1L;
-        var messageId = 2L;
-        var in = new QueueMessage(messageContent, channelId, messageId);
+        var in = new QueueMessage(MESSAGE_CONTENT, CHANNEL_ID, MESSAGE_ID);
 
-        var deliveryTag = 3L;
         var messageProperties = new MessageProperties();
-        messageProperties.setDeliveryTag(deliveryTag);
-        var rabbitmqMessage = new Message(messageContent.getBytes(), messageProperties);
+        messageProperties.setDeliveryTag(DELIVERY_TAG);
+        var rabbitmqMessage = new Message(MESSAGE_CONTENT.getBytes(), messageProperties);
 
         var rabbitmqChannel = mock(Channel.class);
 
         var discordMessage = mock(discord4j.core.object.entity.Message.class);
         var messageChannel = mock(MessageChannel.class);
 
-        when(messageChannel.getMessageById(Snowflake.of(messageId)))
+        when(messageChannel.getMessageById(Snowflake.of(MESSAGE_ID)))
                 .thenReturn(Mono.just(discordMessage));
-        when(llmClient.sendPrompt(new PromptRequest(messageContent)))
+        when(llmClient.sendPrompt(new PromptRequest(MESSAGE_CONTENT)))
                 .thenReturn(new PromptResponse(true, "reason"));
-        when(gatewayDiscordClient.getChannelById(Snowflake.of(channelId)))
+        when(gatewayDiscordClient.getChannelById(Snowflake.of(CHANNEL_ID)))
                 .thenReturn(Mono.just(messageChannel));
         when(discordMessage.delete()).thenReturn(Mono.empty());
-        doThrow(IOException.class).when(rabbitmqChannel).basicAck(deliveryTag, false);
+        doThrow(IOException.class).when(rabbitmqChannel).basicAck(DELIVERY_TAG, false);
 
-        messagesHandler.handle(in, rabbitmqMessage, rabbitmqChannel);
+        discordMessagesHandler.handle(in, rabbitmqMessage, rabbitmqChannel);
 
-        verify(rabbitmqChannel, times(1)).basicAck(deliveryTag, false);
+        verify(rabbitmqChannel, times(1)).basicAck(DELIVERY_TAG, false);
         assertThrows(IOException.class,
-                () -> rabbitmqChannel.basicAck(deliveryTag, false)
+                () -> rabbitmqChannel.basicAck(DELIVERY_TAG, false)
         );
         verifyNoMoreInteractions(rabbitmqChannel);
 
-        verify(gatewayDiscordClient, times(1)).getChannelById(Snowflake.of(channelId));
+        verify(gatewayDiscordClient, times(1)).getChannelById(Snowflake.of(CHANNEL_ID));
         verifyNoMoreInteractions(gatewayDiscordClient);
     }
 

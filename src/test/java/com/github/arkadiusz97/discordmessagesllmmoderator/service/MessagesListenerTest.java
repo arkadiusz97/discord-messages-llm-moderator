@@ -67,7 +67,7 @@ public class MessagesListenerTest {
     }
 
     @Test
-    public void shouldDoNothingWhenClientIsNullDuringShutdown() throws Exception {
+    public void shouldDoNothingWhenClientIsNullDuringShutdown() {
         var rabbitTemplate = mock(RabbitTemplate.class);
         var logout = mock(Mono.class);
 

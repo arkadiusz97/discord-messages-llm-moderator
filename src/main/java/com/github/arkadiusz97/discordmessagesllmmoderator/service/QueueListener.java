@@ -18,7 +18,7 @@ public class QueueListener {
     private final ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     @RabbitListener(queues = "${app.queue-name}")
-    public void listen(QueueMessage in, Message message, Channel channel) throws Exception {
+    public void listen(QueueMessage in, Message message, Channel channel) {
         threadPoolTaskExecutor.execute(
                 () -> {
                     try {

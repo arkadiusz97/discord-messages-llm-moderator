@@ -6,23 +6,22 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.ai.chat.client.ChatClient;
-import org.springframework.test.context.TestPropertySource;
+import org.springframework.ai.chat.client.ChatClient.Builder;
+import org.springframework.ai.chat.client.ChatClient.ChatClientRequestSpec;
+import org.springframework.ai.chat.client.ChatClient.CallResponseSpec;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
-@TestPropertySource(properties = {
-        "app.system-command=command"
-})
 @ExtendWith(MockitoExtension.class)
 public class DefaultClientTest {
 
     @Test
     public void shouldSendPrompt() {
-        var builder = mock(ChatClient.Builder.class, RETURNS_SELF);
+        var builder = mock(Builder.class, RETURNS_SELF);
         var chatClient = mock(ChatClient.class);
-        var requestSpec = mock(ChatClient.ChatClientRequestSpec.class);
-        var callResponseSpec = mock(ChatClient.CallResponseSpec.class);
+        var requestSpec = mock(ChatClientRequestSpec.class);
+        var callResponseSpec = mock(CallResponseSpec.class);
         var inputMessage = "input message";
 
         when(builder.build()).thenReturn(chatClient);
