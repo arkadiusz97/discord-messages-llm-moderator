@@ -7,22 +7,29 @@ import com.github.arkadiusz97.discordmessagesllmmoderator.model.QueueMessage;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.channel.MessageChannel;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import com.rabbitmq.client.Channel;
 import org.springframework.amqp.core.Message;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 import java.io.IOException;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class DiscordMessagesHandler implements MessagesHandler {
 
     private final LlmClient llmClient;
     private final GatewayDiscordClient gatewayDiscordClient;
+    private final Boolean removeMessages;
+
+    public DiscordMessagesHandler(LlmClient llmClient, GatewayDiscordClient gatewayDiscordClient,
+            @Value("${app.remove-messages}") Boolean removeMessages) {
+        this.llmClient = llmClient;
+        this.gatewayDiscordClient = gatewayDiscordClient;
+        this.removeMessages = removeMessages;
+    }
 
     public void handle(QueueMessage in, Message message, Channel channel) throws Exception {
         log.debug("Message content: {}", in.messageContent());
@@ -43,8 +50,13 @@ public class DiscordMessagesHandler implements MessagesHandler {
 
     private void handleLlmResponse(QueueMessage in, Message message, Channel channel, PromptResponse promptResponse)
             throws Exception {
-        if (promptResponse.breaksRules()) {
-            deleteMessage(in.channelId(), in.messageId())
+        String messageContent = in.messageContent();
+        Long messageId = in.messageId();
+        Long channelId = in.channelId();
+        Boolean breaksRules = promptResponse.breaksRules();
+
+        if (breaksRules && removeMessages) {
+            deleteMessage(channelId, messageId)
                     .doOnError(e -> {
                         log.error("Error deleting: {}", e.getMessage(), e);
                         try {
@@ -59,9 +71,14 @@ public class DiscordMessagesHandler implements MessagesHandler {
                         } catch (IOException e) {
                             log.error("Error during successfull acknowledge: {}", e.getMessage(), e);
                         }
-                        log.debug("Deleted successfully");
+                        log.debug("Deleted successfully message with content: {}, message id: {}, Channel id: {}",
+                                messageContent, messageId, channelId);
                     })
                     .subscribe();
+        } else if (breaksRules) {
+            log.debug("Message, which breaks rules is not deleted. Content: {}, message id: {}, Channel id: {}",
+                    messageContent, messageId, channelId);
+            acknowledge(message, channel);
         } else {
             acknowledge(message, channel);
         }

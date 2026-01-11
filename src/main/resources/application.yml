@@ -7,6 +7,7 @@ app:
   system-command: Check a message for netiquette violations, such as using offensive language, attacks, or harassment.
     Only flag messages that are clearly inappropriate.
     Do not flag messages that are fragments of words unless they are explicitly offensive.
+  remove-messages: ${DISCORD_BOT_REMOVE_MESSAGES}
 logging:
   level:
     com:

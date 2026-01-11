@@ -1,7 +1,8 @@
 # Discord messages llm moderator
 Discord messages llm moderator is a Discord's bot for automatic servers messages moderation.
 It uses a large language model for analyzing messages if it breaks netiquette.
-If a message breaks netiquette, then it deletes it. Currently, the reason for deleting message can be seen only in logs.
+If a message breaks netiquette, then it deletes it or only logs about those messages.
+Currently, the reason for deleting message can be seen only in logs.
 
 ## Getting started
 ### Configure your bot instance on Discord site
@@ -23,7 +24,7 @@ Take into account that the first run could take some time, because LLM has to be
 * Consider using other llm, which consumes fewer resources or gives more accurate responses.
 * Consider tune prompt for analyzing messages.
 * Add checking attachments in messages.
-* Add option for a not deleting message, but only sending notifications through for example email or message to a specified channel on a server.
+* Add option for sending notifications through, for example, email or message to a specified channel on a server.
 
 ### License
 The application is licensed under the MIT license.

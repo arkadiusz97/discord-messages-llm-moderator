@@ -21,6 +21,7 @@ services:
       DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN}
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-myuser}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-secret}
+      DISCORD_BOT_REMOVE_MESSAGES: ${DISCORD_BOT_REMOVE_MESSAGES:-true}
     depends_on:
       - rabbitmq
       - ollama
