@@ -4,6 +4,8 @@ import com.github.arkadiusz97.discordmessagesllmmoderator.exception.DiscordMessa
 import com.github.arkadiusz97.discordmessagesllmmoderator.model.PromptRequest;
 import com.github.arkadiusz97.discordmessagesllmmoderator.model.PromptResponse;
 import com.github.arkadiusz97.discordmessagesllmmoderator.model.QueueMessage;
+import com.github.arkadiusz97.discordmessagesllmmoderator.service.llmclient.LlmClient;
+import com.github.arkadiusz97.discordmessagesllmmoderator.service.notifications.NotificationsService;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
 import discord4j.core.object.entity.channel.MessageChannel;
@@ -22,12 +24,14 @@ public class DiscordMessagesHandler implements MessagesHandler {
 
     private final LlmClient llmClient;
     private final GatewayDiscordClient gatewayDiscordClient;
+    private final NotificationsService notificationsService;
     private final Boolean removeMessages;
 
     public DiscordMessagesHandler(LlmClient llmClient, GatewayDiscordClient gatewayDiscordClient,
-            @Value("${app.remove-messages}") Boolean removeMessages) {
+                NotificationsService notificationsService, @Value("${app.remove-messages}") Boolean removeMessages) {
         this.llmClient = llmClient;
         this.gatewayDiscordClient = gatewayDiscordClient;
+        this.notificationsService = notificationsService;
         this.removeMessages = removeMessages;
     }
 
@@ -67,7 +71,7 @@ public class DiscordMessagesHandler implements MessagesHandler {
                     })
                     .doOnSuccess(_ -> {
                         try {
-                            acknowledge(message, channel);
+                            acknowledge(message, channel, promptResponse);
                         } catch (IOException e) {
                             log.error("Error during successfull acknowledge: {}", e.getMessage(), e);
                         }
@@ -78,9 +82,9 @@ public class DiscordMessagesHandler implements MessagesHandler {
         } else if (breaksRules) {
             log.debug("Message, which breaks rules is not deleted. Content: {}, message id: {}, Channel id: {}",
                     messageContent, messageId, channelId);
-            acknowledge(message, channel);
+            acknowledge(message, channel, promptResponse);
         } else {
-            acknowledge(message, channel);
+            acknowledge(message, channel, promptResponse);
         }
     }
 
@@ -88,8 +92,9 @@ public class DiscordMessagesHandler implements MessagesHandler {
         channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, true);
     }
 
-    private void acknowledge(Message message, Channel channel) throws IOException {
+    private void acknowledge(Message message, Channel channel, PromptResponse promptResponse) throws IOException {
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
+        notificationsService.notify(removeMessages, promptResponse);
     }
 
     private Mono<Void> deleteMessage(Long channelId, Long messageId) {

@@ -2,6 +2,7 @@ package com.github.arkadiusz97.discordmessagesllmmoderator.service;
 
 import com.github.arkadiusz97.discordmessagesllmmoderator.model.PromptRequest;
 import com.github.arkadiusz97.discordmessagesllmmoderator.model.PromptResponse;
+import com.github.arkadiusz97.discordmessagesllmmoderator.service.llmclient.DefaultClient;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;

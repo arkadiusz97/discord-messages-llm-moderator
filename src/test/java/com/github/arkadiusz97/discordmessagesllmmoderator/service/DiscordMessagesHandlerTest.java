@@ -4,6 +4,8 @@ import com.github.arkadiusz97.discordmessagesllmmoderator.exception.DiscordMessa
 import com.github.arkadiusz97.discordmessagesllmmoderator.model.PromptRequest;
 import com.github.arkadiusz97.discordmessagesllmmoderator.model.PromptResponse;
 import com.github.arkadiusz97.discordmessagesllmmoderator.model.QueueMessage;
+import com.github.arkadiusz97.discordmessagesllmmoderator.service.llmclient.LlmClient;
+import com.github.arkadiusz97.discordmessagesllmmoderator.service.notifications.NotificationsService;
 import com.rabbitmq.client.Channel;
 import discord4j.common.util.Snowflake;
 import discord4j.core.GatewayDiscordClient;
@@ -39,6 +41,9 @@ public class DiscordMessagesHandlerTest {
     @Mock
     private GatewayDiscordClient gatewayDiscordClient;
 
+    @Mock
+    private NotificationsService notificationsService;
+
     private static final String MESSAGE_CONTENT = "message";
     private static final Long CHANNEL_ID = 1L;
     private static final Long MESSAGE_ID = 2L;
@@ -47,12 +52,13 @@ public class DiscordMessagesHandlerTest {
 
     @Test
     public void handleMessageSuccessfully_whenDoesNotBreakRules() throws Exception {
+        ReflectionTestUtils.setField(discordMessagesHandler, "removeMessages", true);
         var messageProperties = new MessageProperties();
         messageProperties.setDeliveryTag(DELIVERY_TAG);
         var message = new Message(MESSAGE_CONTENT.getBytes(), messageProperties);
 
         var channel = mock(Channel.class);
-
+        var promptResponse = new PromptResponse(false, null);
         when(llmClient.sendPrompt(new PromptRequest(MESSAGE_CONTENT)))
                 .thenReturn(new PromptResponse(false, null));
 
@@ -62,6 +68,7 @@ public class DiscordMessagesHandlerTest {
         verifyNoMoreInteractions(channel);
 
         verifyNoInteractions(gatewayDiscordClient);
+        verify(notificationsService, times(1)).notify(true, promptResponse);
     }
 
     @ParameterizedTest
@@ -79,8 +86,9 @@ public class DiscordMessagesHandlerTest {
         var discordMessage = mock(discord4j.core.object.entity.Message.class);
         var messageChannel = mock(MessageChannel.class);
 
+        var promptResponse = new PromptResponse(true, "reason");
         when(llmClient.sendPrompt(new PromptRequest(MESSAGE_CONTENT)))
-                .thenReturn(new PromptResponse(true, "reason"));
+                .thenReturn(promptResponse);
         if (removeMessages) {
             when(gatewayDiscordClient.getChannelById(Snowflake.of(CHANNEL_ID)))
                     .thenReturn(Mono.just(messageChannel));
@@ -99,6 +107,7 @@ public class DiscordMessagesHandlerTest {
 
         verify(discordMessage, times(discordMessageCalls)).delete();
         verifyNoMoreInteractions(discordMessage);
+        verify(notificationsService, times(1)).notify(removeMessages, promptResponse);
     }
 
     @Test
@@ -120,6 +129,7 @@ public class DiscordMessagesHandlerTest {
         verifyNoMoreInteractions(rabbitmqChannel);
 
         verifyNoInteractions(gatewayDiscordClient);
+        verify(notificationsService, times(0)).notify(anyBoolean(), any(PromptResponse.class));
     }
 
     @Test
@@ -132,8 +142,9 @@ public class DiscordMessagesHandlerTest {
 
         var rabbitmqChannel = mock(Channel.class);
 
+        var promptResponse = new PromptResponse(true, "reason");
         when(llmClient.sendPrompt(new PromptRequest(MESSAGE_CONTENT)))
-                .thenReturn(new PromptResponse(true, "reason"));
+                .thenReturn(promptResponse);
         when(gatewayDiscordClient.getChannelById(Snowflake.of(CHANNEL_ID)))
                 .thenReturn(Mono.error(new IOException()));
         doThrow(IOException.class).when(rabbitmqChannel).basicNack(DELIVERY_TAG, false, true);
@@ -148,6 +159,7 @@ public class DiscordMessagesHandlerTest {
 
         verify(gatewayDiscordClient, times(1)).getChannelById(Snowflake.of(CHANNEL_ID));
         verifyNoMoreInteractions(gatewayDiscordClient);
+        verify(notificationsService, times(0)).notify(anyBoolean(), any(PromptResponse.class));
     }
 
     @Test
@@ -182,6 +194,7 @@ public class DiscordMessagesHandlerTest {
 
         verify(gatewayDiscordClient, times(1)).getChannelById(Snowflake.of(CHANNEL_ID));
         verifyNoMoreInteractions(gatewayDiscordClient);
+        verify(notificationsService, times(0)).notify(anyBoolean(), any(PromptResponse.class));
     }
 
     private static Stream<Arguments> discordMessagesHandlerData() {
