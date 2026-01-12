@@ -1,6 +1,6 @@
 services:
   rabbitmq:
-    image: 'rabbitmq:4.1.4'
+    image: 'rabbitmq:4.2.2'
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-myuser}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-secret}
@@ -22,6 +22,11 @@ services:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER:-myuser}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS:-secret}
       DISCORD_BOT_REMOVE_MESSAGES: ${DISCORD_BOT_REMOVE_MESSAGES:-true}
+      DISCORD_BOT_MAIL_HOST: ${DISCORD_BOT_MAIL_HOST:-invalid}
+      DISCORD_BOT_MAIL_PORT: ${DISCORD_BOT_MAIL_PORT:-invalid}
+      DISCORD_BOT_MAIL_USERNAME: ${DISCORD_BOT_MAIL_USERNAME:-invalid}
+      DISCORD_BOT_MAIL_PASSWORD: ${DISCORD_BOT_MAIL_PASSWORD:-invalid}
+      DISCORD_BOT_MAIL_TO_ADDRESS: ${DISCORD_BOT_MAIL_TO_ADDRESS:-invalid}
     depends_on:
       - rabbitmq
       - ollama

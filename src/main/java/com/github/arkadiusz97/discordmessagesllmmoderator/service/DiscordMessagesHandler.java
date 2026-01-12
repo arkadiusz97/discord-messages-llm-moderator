@@ -71,7 +71,7 @@ public class DiscordMessagesHandler implements MessagesHandler {
                     })
                     .doOnSuccess(_ -> {
                         try {
-                            acknowledge(message, channel, promptResponse);
+                            acknowledge(message, channel, promptResponse, messageContent);
                         } catch (IOException e) {
                             log.error("Error during successfull acknowledge: {}", e.getMessage(), e);
                         }
@@ -82,9 +82,9 @@ public class DiscordMessagesHandler implements MessagesHandler {
         } else if (breaksRules) {
             log.debug("Message, which breaks rules is not deleted. Content: {}, message id: {}, Channel id: {}",
                     messageContent, messageId, channelId);
-            acknowledge(message, channel, promptResponse);
+            acknowledge(message, channel, promptResponse, messageContent);
         } else {
-            acknowledge(message, channel, promptResponse);
+            acknowledge(message, channel, promptResponse, messageContent);
         }
     }
 
@@ -92,9 +92,10 @@ public class DiscordMessagesHandler implements MessagesHandler {
         channel.basicNack(message.getMessageProperties().getDeliveryTag(), false, true);
     }
 
-    private void acknowledge(Message message, Channel channel, PromptResponse promptResponse) throws IOException {
+    private void acknowledge(Message message, Channel channel, PromptResponse promptResponse,
+                String messageContent) throws IOException {
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
-        notificationsService.notify(removeMessages, promptResponse);
+        notificationsService.notify(removeMessages, promptResponse, messageContent);
     }
 
     private Mono<Void> deleteMessage(Long channelId, Long messageId) {

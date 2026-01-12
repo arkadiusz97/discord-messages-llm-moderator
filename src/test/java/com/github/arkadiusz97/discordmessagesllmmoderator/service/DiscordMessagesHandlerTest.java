@@ -68,7 +68,8 @@ public class DiscordMessagesHandlerTest {
         verifyNoMoreInteractions(channel);
 
         verifyNoInteractions(gatewayDiscordClient);
-        verify(notificationsService, times(1)).notify(true, promptResponse);
+        verify(notificationsService, times(1)).notify(true, promptResponse,
+                MESSAGE_CONTENT);
     }
 
     @ParameterizedTest
@@ -107,7 +108,8 @@ public class DiscordMessagesHandlerTest {
 
         verify(discordMessage, times(discordMessageCalls)).delete();
         verifyNoMoreInteractions(discordMessage);
-        verify(notificationsService, times(1)).notify(removeMessages, promptResponse);
+        verify(notificationsService, times(1)).notify(removeMessages, promptResponse,
+                MESSAGE_CONTENT);
     }
 
     @Test
@@ -129,7 +131,8 @@ public class DiscordMessagesHandlerTest {
         verifyNoMoreInteractions(rabbitmqChannel);
 
         verifyNoInteractions(gatewayDiscordClient);
-        verify(notificationsService, times(0)).notify(anyBoolean(), any(PromptResponse.class));
+        verify(notificationsService, times(0)).notify(anyBoolean(), any(PromptResponse.class),
+                anyString());
     }
 
     @Test
@@ -159,7 +162,8 @@ public class DiscordMessagesHandlerTest {
 
         verify(gatewayDiscordClient, times(1)).getChannelById(Snowflake.of(CHANNEL_ID));
         verifyNoMoreInteractions(gatewayDiscordClient);
-        verify(notificationsService, times(0)).notify(anyBoolean(), any(PromptResponse.class));
+        verify(notificationsService, times(0)).notify(anyBoolean(), any(PromptResponse.class),
+                anyString());
     }
 
     @Test
@@ -194,7 +198,8 @@ public class DiscordMessagesHandlerTest {
 
         verify(gatewayDiscordClient, times(1)).getChannelById(Snowflake.of(CHANNEL_ID));
         verifyNoMoreInteractions(gatewayDiscordClient);
-        verify(notificationsService, times(0)).notify(anyBoolean(), any(PromptResponse.class));
+        verify(notificationsService, times(0)).notify(anyBoolean(), any(PromptResponse.class),
+                anyString());
     }
 
     private static Stream<Arguments> discordMessagesHandlerData() {

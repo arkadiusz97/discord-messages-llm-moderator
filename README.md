@@ -24,7 +24,6 @@ Take into account that the first run could take some time, because LLM has to be
 * Consider using other llm, which consumes fewer resources or gives more accurate responses.
 * Consider tune prompt for analyzing messages.
 * Add checking attachments in messages.
-* Add option for sending notifications through, for example, email or message to a specified channel on a server.
 
 ### License
 The application is licensed under the MIT license.

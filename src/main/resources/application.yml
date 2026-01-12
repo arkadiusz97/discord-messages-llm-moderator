@@ -8,6 +8,10 @@ app:
     Only flag messages that are clearly inappropriate.
     Do not flag messages that are fragments of words unless they are explicitly offensive.
   remove-messages: ${DISCORD_BOT_REMOVE_MESSAGES}
+  notifications:
+    mail-to-address: ${DISCORD_BOT_MAIL_TO_ADDRESS}
+    enabled:
+      email: true
 logging:
   level:
     com:
@@ -29,5 +33,17 @@ spring:
     host: rabbitmq
     username: ${RABBITMQ_DEFAULT_USER}
     password: ${RABBITMQ_DEFAULT_PASS}
+  mail:
+    host: ${DISCORD_BOT_MAIL_HOST}
+    port: ${DISCORD_BOT_MAIL_PORT}
+    username: ${DISCORD_BOT_MAIL_USERNAME}
+    password: ${DISCORD_BOT_MAIL_PASSWORD}
+    ssl:
+      enabled: true
+    properties:
+      mail:
+        smtp:
+          auth: true
+        #debug: true
   application:
     name: discord-messages-llm-moderator
