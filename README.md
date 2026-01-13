@@ -20,10 +20,10 @@ docker compose up -d
 Take into account that the first run could take some time, because LLM has to be downloaded.
 
 ## Example improvements, which can be done
-* Add unit test for QueueListener class.
 * Consider using other llm, which consumes fewer resources or gives more accurate responses.
 * Consider tune prompt for analyzing messages.
 * Add checking attachments in messages.
+* Add bot commands to run on server to change bot configuration and persist it in a database.
 
 ### License
 The application is licensed under the MIT license.
