@@ -28,6 +28,8 @@ Take into account that the first run could take some time, because LLM has to be
 * Use Dead Letter Exchange with delayed and limited retries for queue in case of negative acknowledge.
 * Put analyzed messages by LLM to another queue to not send this message again to LLM,
 when negative acknowledge is sent due to Discord's API error during a deleting message.
+Or use auto acknowledge for queue messages and Spring Retry, when Ollama or Discord API throws exception.
+* Add bot commands to call on Discord server to configure app.
 * Consider using other llm, which consumes fewer resources or gives more accurate responses.
 * Consider tune prompt for analyzing messages.
 * Add checking attachments in messages.
