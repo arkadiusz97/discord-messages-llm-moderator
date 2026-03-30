@@ -3,7 +3,7 @@ plugins {
 	/*
 	todo: Upgrade Spring Boot, when Ollama dependency will be compatible with Spring Boot newer version.
 	*/
-	id 'org.springframework.boot' version '3.5.9'
+	id 'org.springframework.boot' version '3.5.13'
 	id 'io.spring.dependency-management' version '1.1.7'
 }
 
@@ -28,10 +28,10 @@ repositories {
 }
 
 ext {
-	set('springAiVersion', "1.1.2")
-	set('discord4jCoreVersion', "3.3.0")
-	set('lombokVersion', "1.18.42")
-	set('jacksonCoreVersion', "2.20.1")
+	set('springAiVersion', "1.1.4")
+	set('discord4jCoreVersion', "3.3.1")
+	set('lombokVersion', "1.18.44")
+	set('jacksonCoreVersion', "2.21.2")
 }
 
 dependencies {

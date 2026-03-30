@@ -25,7 +25,7 @@ spring:
       chat:
         options:
           model: llama3
-          temperature: 0.1
+          top-k: 1
       init:
         pull-model-strategy: always
         timeout: 60m
