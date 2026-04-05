@@ -48,14 +48,14 @@ public class NotificationsServiceImplTest {
             when(notificationForExecution2.name()).thenReturn("notification2");
             when(notificationNotForExecution.name()).thenReturn("notification3");
         }
-        notificationsServiceImpl.notify(true, promptResponse, "message content");
+        notificationsServiceImpl.notify(true, promptResponse, "message content", 1L, 1L);
 
         verify(notificationForExecution1, times(invokationsOfNotifications))
-                .notify(anyBoolean(), any(PromptResponse.class), anyString());
+                .notify(anyBoolean(), any(PromptResponse.class), anyString(), anyLong(), anyLong());
         verify(notificationForExecution2, times(invokationsOfNotifications))
-                .notify(anyBoolean(), any(PromptResponse.class), anyString());
+                .notify(anyBoolean(), any(PromptResponse.class), anyString(), anyLong(), anyLong());
         verify(notificationNotForExecution, times(0))
-                .notify(anyBoolean(), any(PromptResponse.class), anyString());
+                .notify(anyBoolean(), any(PromptResponse.class), anyString(), anyLong(), anyLong());
     }
 
     private static Stream<Arguments> shouldExecuteAllStrategiesMarkedForExecutionData() {

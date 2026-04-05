@@ -35,15 +35,19 @@ public class EmailNotificationTest {
         String mailFrom = "mail from";
         String mailTo = "mail to";
         String messageContent = "message content";
+        Long userId = 1L;
+        Long serverId = 2L;
         PromptResponse promptResponse = new PromptResponse(true, "reason");
         ReflectionTestUtils.setField(emailNotification,"mailFrom", mailFrom);
         ReflectionTestUtils.setField(emailNotification,"mailTo", mailTo);
 
-        emailNotification.notify(removedMessage, promptResponse, messageContent);
+        emailNotification.notify(removedMessage, promptResponse, messageContent, userId, serverId);
 
         String messageContentToSend = "Received message '" +
                 messageContent +
-                "'\nIt breaks rule: '" +
+                "'\nFrom user with id: " + userId +
+                "\nOn a server with id: " + serverId +
+                "\nIt breaks rule: '" +
                 promptResponse.reasonForBreakingRules() +
                 "'\nMessage will " +
                 (removedMessage ? "be removed" : "not be removed") +

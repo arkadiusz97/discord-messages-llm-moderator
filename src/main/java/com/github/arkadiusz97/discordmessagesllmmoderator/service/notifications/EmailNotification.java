@@ -28,8 +28,10 @@ public class EmailNotification implements Notification {
     }
 
     @Override
-    public void notify(Boolean removedMessage, PromptResponse promptResponse, String messageContent) {
-        String messageContentToSend = getMessageContent(removedMessage, promptResponse, messageContent);
+    public void notify(Boolean removedMessage, PromptResponse promptResponse, String messageContent, Long userId,
+            Long serverId) {
+        String messageContentToSend = getMessageContent(removedMessage, promptResponse, messageContent, userId,
+                serverId);
         log.debug("Sending mail to: {} with content: {}", mailTo, messageContentToSend);
         SimpleMailMessage message = new SimpleMailMessage();
         message.setFrom(mailFrom);
@@ -39,10 +41,13 @@ public class EmailNotification implements Notification {
         javaMailSender.send(message);
     }
 
-    private String getMessageContent(Boolean removedMessage, PromptResponse promptResponse, String messageContent) {
+    private String getMessageContent(Boolean removedMessage, PromptResponse promptResponse, String messageContent,
+            Long userId, Long serverId) {
         return "Received message '" +
                 messageContent +
-                "'\nIt breaks rule: '" +
+                "'\nFrom user with id: " + userId +
+                "\nOn a server with id: " + serverId +
+                "\nIt breaks rule: '" +
                 promptResponse.reasonForBreakingRules() +
                 "'\nMessage will " +
                 (removedMessage ? "be removed" : "not be removed") +

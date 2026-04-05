@@ -16,7 +16,8 @@ public class NotificationsServiceImpl implements NotificationsService {
     private final Set<Notification> notificationStrategies;
     private final Environment environment;
 
-    public void notify(boolean removedMessage, PromptResponse promptResponse, String messageContent) {
+    public void notify(boolean removedMessage, PromptResponse promptResponse, String messageContent, Long userId,
+            Long serverId) {
         if (!promptResponse.breaksRules()) {
             return;
         }
@@ -27,7 +28,7 @@ public class NotificationsServiceImpl implements NotificationsService {
             if (Boolean.TRUE.equals(executeStrategy)) {
                 log.debug("Executing notification strategy: '{}' for prompt response: {}",
                         notification.name(), promptResponse);
-                notification.notify(removedMessage, promptResponse, messageContent);
+                notification.notify(removedMessage, promptResponse, messageContent, userId, serverId);
             } else {
                 log.debug("Notification strategy '{}' won't be executed for prompt response: {}",
                         notification.name(), promptResponse);

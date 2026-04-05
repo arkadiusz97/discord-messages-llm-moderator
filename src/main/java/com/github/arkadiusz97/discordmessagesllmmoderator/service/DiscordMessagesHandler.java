@@ -39,6 +39,8 @@ public class DiscordMessagesHandler implements MessagesHandler {
         log.debug("Message content: {}", in.messageContent());
         log.debug("Message id: {}", in.messageId());
         log.debug("Channel id: {}", in.channelId());
+        log.debug("Server id: {}", in.serverId());
+        log.debug("User id: {}", in.userId());
         PromptResponse promptResponse;
         try {
             promptResponse = llmClient.sendPrompt(
@@ -57,6 +59,8 @@ public class DiscordMessagesHandler implements MessagesHandler {
         String messageContent = in.messageContent();
         Long messageId = in.messageId();
         Long channelId = in.channelId();
+        Long authorId = in.userId();
+        Long serverId = in.serverId();
         Boolean breaksRules = promptResponse.breaksRules();
 
         if (breaksRules && removeMessages) {
@@ -71,20 +75,20 @@ public class DiscordMessagesHandler implements MessagesHandler {
                     })
                     .doOnSuccess(_ -> {
                         try {
-                            acknowledge(message, channel, promptResponse, messageContent);
+                            acknowledge(message, channel, promptResponse, messageContent, authorId, serverId);
                         } catch (IOException e) {
                             log.error("Error during successfull acknowledge: {}", e.getMessage(), e);
                         }
-                        log.debug("Deleted successfully message with content: {}, message id: {}, Channel id: {}",
-                                messageContent, messageId, channelId);
+                        log.debug("Deleted successfully message with content: {}, message id: {}, channel id: {}, " +
+                            "author id: {}, server id: {}", messageContent, messageId, channelId, authorId, serverId);
                     })
                     .subscribe();
         } else if (breaksRules) {
-            log.debug("Message, which breaks rules is not deleted. Content: {}, message id: {}, Channel id: {}",
-                    messageContent, messageId, channelId);
-            acknowledge(message, channel, promptResponse, messageContent);
+            log.debug("Message, which breaks rules is not deleted. Content: {}, message id: {}, Channel id: {}" +
+                "author id: {}, server id: {}", messageContent, messageId, channelId, authorId, serverId);
+            acknowledge(message, channel, promptResponse, messageContent, authorId, serverId);
         } else {
-            acknowledge(message, channel, promptResponse, messageContent);
+            acknowledge(message, channel, promptResponse, messageContent, authorId, serverId);
         }
     }
 
@@ -93,9 +97,9 @@ public class DiscordMessagesHandler implements MessagesHandler {
     }
 
     private void acknowledge(Message message, Channel channel, PromptResponse promptResponse,
-                String messageContent) throws IOException {
+                String messageContent, Long userId, Long serverId) throws IOException {
         channel.basicAck(message.getMessageProperties().getDeliveryTag(), false);
-        notificationsService.notify(removeMessages, promptResponse, messageContent);
+        notificationsService.notify(removeMessages, promptResponse, messageContent, userId, serverId);
     }
 
     private Mono<Void> deleteMessage(Long channelId, Long messageId) {

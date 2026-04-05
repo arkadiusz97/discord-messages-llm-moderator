@@ -48,7 +48,10 @@ public class DiscordMessagesHandlerTest {
     private static final Long CHANNEL_ID = 1L;
     private static final Long MESSAGE_ID = 2L;
     private static final Long DELIVERY_TAG = 3L;
-    private static final QueueMessage IN = new QueueMessage(MESSAGE_CONTENT, CHANNEL_ID, MESSAGE_ID);
+    private static final Long SERVER_ID = 4L;
+    private static final Long USER_ID = 5L;
+    private static final QueueMessage IN = new QueueMessage(MESSAGE_CONTENT, CHANNEL_ID, MESSAGE_ID, SERVER_ID,
+            USER_ID);
 
     @Test
     public void handleMessageSuccessfully_whenDoesNotBreakRules() throws Exception {
@@ -69,7 +72,7 @@ public class DiscordMessagesHandlerTest {
 
         verifyNoInteractions(gatewayDiscordClient);
         verify(notificationsService, times(1)).notify(true, promptResponse,
-                MESSAGE_CONTENT);
+                MESSAGE_CONTENT, USER_ID, SERVER_ID);
     }
 
     @ParameterizedTest
@@ -109,7 +112,7 @@ public class DiscordMessagesHandlerTest {
         verify(discordMessage, times(discordMessageCalls)).delete();
         verifyNoMoreInteractions(discordMessage);
         verify(notificationsService, times(1)).notify(removeMessages, promptResponse,
-                MESSAGE_CONTENT);
+                MESSAGE_CONTENT, USER_ID, SERVER_ID);
     }
 
     @Test
@@ -132,7 +135,7 @@ public class DiscordMessagesHandlerTest {
 
         verifyNoInteractions(gatewayDiscordClient);
         verify(notificationsService, times(0)).notify(anyBoolean(), any(PromptResponse.class),
-                anyString());
+                anyString(), anyLong(), anyLong());
     }
 
     @Test
@@ -163,7 +166,7 @@ public class DiscordMessagesHandlerTest {
         verify(gatewayDiscordClient, times(1)).getChannelById(Snowflake.of(CHANNEL_ID));
         verifyNoMoreInteractions(gatewayDiscordClient);
         verify(notificationsService, times(0)).notify(anyBoolean(), any(PromptResponse.class),
-                anyString());
+                anyString(), anyLong(), anyLong());
     }
 
     @Test
@@ -199,7 +202,7 @@ public class DiscordMessagesHandlerTest {
         verify(gatewayDiscordClient, times(1)).getChannelById(Snowflake.of(CHANNEL_ID));
         verifyNoMoreInteractions(gatewayDiscordClient);
         verify(notificationsService, times(0)).notify(anyBoolean(), any(PromptResponse.class),
-                anyString());
+                anyString(), anyLong(), anyLong());
     }
 
     private static Stream<Arguments> discordMessagesHandlerData() {

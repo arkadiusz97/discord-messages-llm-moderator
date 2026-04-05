@@ -35,6 +35,8 @@ Or use auto acknowledge for queue messages and Spring Retry, when Ollama or Disc
 * Add checking attachments in messages.
 * Add bot commands to run on server to change bot configuration and persist it in a database.
 * Add sending notifications about messages to a selected channel on Discord server.
+* Consider adding more information to notifications like username, avatar, server name, etc.
+* Add notifications via private messages for users that their message has been removed.
 
 ### License
 The application is licensed under the MIT license.
