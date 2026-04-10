@@ -31,18 +31,22 @@ public class MessagesListener {
     public void init() {
         client.on(MessageCreateEvent.class).subscribe(event -> {
             var eventMessage = event.getMessage();
-            long messageId = eventMessage.getId().asLong();
-            if (eventMessage.getAuthor().isEmpty()) {
-                log.debug("Message " + messageId + " is ignored, because author is not provided");
+            var messageId = eventMessage.getId().asLong();
+            var author = eventMessage.getAuthor();
+            var messagePrefix = "Message " + messageId + " is ignored, because ";
+            if (author.isEmpty()) {
+                log.debug(messagePrefix + "author is not provided");
             } else if (eventMessage.getGuildId().isEmpty()) {
-                log.debug("Message " + messageId + " is ignored, because guildId is not provided");
+                log.debug(messagePrefix + "guildId is not provided");
+            } else if (author.get().isBot()) {
+                log.debug(messagePrefix + "it was sent by bot");
             } else {
                 var queueMessage = new QueueMessage(
                         eventMessage.getContent(),
                         eventMessage.getChannelId().asLong(),
                         eventMessage.getId().asLong(),
                         eventMessage.getGuildId().get().asLong(),
-                        eventMessage.getAuthor().get().getId().asLong()
+                        author.get().getId().asLong()
                 );
                 RabbitTemplate.convertAndSend(queueName, queueMessage);
             }

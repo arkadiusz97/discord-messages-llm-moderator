@@ -1,13 +1,15 @@
 # Discord messages llm moderator
 Discord messages llm moderator is a Discord's bot for automatic servers messages moderation and/or for alert server staff about messages, which could require moderation.
 It uses a large language model(llm) for analyzing messages if it breaks netiquette.
-If a message breaks netiquette, then it deletes it and/or sends notifications through email about those messages.
+If a message breaks netiquette, then it deletes it and/or sends notifications about those messages.
+Notifications can be sent through email (disabled by default) or to special channel for a guild staff (by default with channel name discord-messages-llm-moderator-notifications).
 
 ## Getting started
 ### Configure your bot instance on Discord site
 Before run, you need to create and configure your bot instance in Discord Developers portal https://discord.com/developers/applications
-Then give your bot permissions, which allow viewing and deleting messages.
+Then give your bot permissions, which allow viewing, sending and deleting messages.
 In the end, install bot on selected Discord server.
+If you want to use notifications sent to a server, then make sure that you created proper channel.
 For more information, please visit https://discord.com/developers/docs/quick-start/getting-started
 
 ### Build and run locally
@@ -18,7 +20,8 @@ At first, you need to set the following mandatory environment variables:
 * **DISCORD_BOT_MAIL_USERNAME** - mail address from which notifications are being sent.
 * **DISCORD_BOT_MAIL_PASSWORD** - password for mail address from which notifications are being sent.
 * **DISCORD_BOT_MAIL_TO_ADDRESS** - mail address to which notifications are being sent.
-Then run command:
+
+Then run command in downloaded repository root directory:
 ```
 docker compose up -d
 ```
@@ -34,9 +37,10 @@ Or use auto acknowledge for queue messages and Spring Retry, when Ollama or Disc
 * Consider tune prompt for analyzing messages.
 * Add checking attachments in messages.
 * Add bot commands to run on server to change bot configuration and persist it in a database.
-* Add sending notifications about messages to a selected channel on Discord server.
 * Consider adding more information to notifications like username, avatar, server name, etc.
 * Add notifications via private messages for users that their message has been removed.
+* Take into account messages sent before a message which is being checked.
+* Create unit test for GuildChannelNotification class.
 
 ### License
 The application is licensed under the MIT license.

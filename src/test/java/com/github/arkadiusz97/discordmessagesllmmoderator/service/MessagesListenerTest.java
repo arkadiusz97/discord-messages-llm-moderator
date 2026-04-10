@@ -43,7 +43,8 @@ public class MessagesListenerTest {
 
     @ParameterizedTest
     @MethodSource("shouldSubscribeMessageCreateEventAndLogoutAtTheEnd")
-    public void shouldSubscribeMessageCreateEventAndLogoutAtTheEnd(Boolean serverEmpty, Boolean userEmpty) {
+    public void shouldSubscribeMessageCreateEventAndLogoutAtTheEnd(Boolean serverEmpty, Boolean userEmpty,
+            Boolean isBot) {
         var queue = "test-queue";
         ReflectionTestUtils.setField(messagesListener, "queueName", queue);
         var messageContent = "message";
@@ -52,6 +53,7 @@ public class MessagesListenerTest {
         var userId = 3L;
         var serverId = 4L;
         var user = mock(User.class);
+        when(user.isBot()).thenReturn(isBot);
         when(user.getId()).thenReturn(Snowflake.of(userId));
 
         var message = mock(Message.class);
@@ -72,7 +74,7 @@ public class MessagesListenerTest {
         messagesListener.init();
         messagesListener.shutdown();
 
-        if (serverEmpty || userEmpty) {
+        if (serverEmpty || userEmpty || isBot) {
             verify(rabbitTemplate, never()).convertAndSend(eq(queue), any(QueueMessage.class));
         } else {
             ArgumentCaptor<QueueMessage> captor = ArgumentCaptor.forClass(QueueMessage.class);
@@ -101,10 +103,11 @@ public class MessagesListenerTest {
 
     private static Stream<Arguments> shouldSubscribeMessageCreateEventAndLogoutAtTheEnd() {
         return Stream.of(
-                Arguments.of(true, true),
-                Arguments.of(true, false),
-                Arguments.of(false, true),
-                Arguments.of(false, false)
+                Arguments.of(true, true, false),
+                Arguments.of(true, false, false),
+                Arguments.of(false, true, false),
+                Arguments.of(false, false, false),
+                Arguments.of(false, false, true)
         );
     }
 

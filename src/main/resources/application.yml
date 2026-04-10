@@ -10,8 +10,10 @@ app:
   remove-messages: ${DISCORD_BOT_REMOVE_MESSAGES}
   notifications:
     mail-to-address: ${DISCORD_BOT_MAIL_TO_ADDRESS}
+    channel-name: discord-messages-llm-moderator-notifications
     enabled:
-      email: true
+      email: false
+      guild-channel: true
 logging:
   level:
     com:
