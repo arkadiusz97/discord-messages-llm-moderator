@@ -32,9 +32,16 @@ public class GuildChannelNotification implements Notification {
     @Override
     public void notify(Boolean removedMessage, PromptResponse promptResponse, String messageContent, Long userId,
             Long serverId) {
-        String messageContentToSend = getMessageContent(removedMessage, promptResponse, messageContent, userId);
+        String message = getMessageContent(removedMessage, promptResponse, messageContent, userId);
+        createMessage(message, serverId)
+                .doOnError(e -> log.error("Error during sending message '{}' to guild: {} {}", message,
+                        serverId, e.getMessage(), e))
+                .doOnSuccess(_ -> log.debug("Message '{}' sent to guild {}", message, serverId))
+                .subscribe();
+    }
 
-        client.getGuildById(Snowflake.of(serverId))
+    private Mono<Void> createMessage(String messageContentToSend, Long serverId) {
+        return client.getGuildById(Snowflake.of(serverId))
                 .flatMapMany(Guild::getChannels)
                 .ofType(GuildChannel.class)
                 .filter(channel -> channel.getName().equals(channelName))
@@ -45,7 +52,7 @@ public class GuildChannelNotification implements Notification {
                 }))
                 .ofType(MessageChannel.class)
                 .flatMap(channel -> channel.createMessage(messageContentToSend))
-                .block();
+                .then();
     }
 
     private String getMessageContent(Boolean removedMessage, PromptResponse promptResponse, String messageContent,

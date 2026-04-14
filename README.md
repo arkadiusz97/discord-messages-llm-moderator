@@ -40,7 +40,6 @@ Or use auto acknowledge for queue messages and Spring Retry, when Ollama or Disc
 * Consider adding more information to notifications like username, avatar, server name, etc.
 * Add notifications via private messages for users that their message has been removed.
 * Take into account messages sent before a message which is being checked.
-* Create unit test for GuildChannelNotification class.
 
 ### License
 The application is licensed under the MIT license.
