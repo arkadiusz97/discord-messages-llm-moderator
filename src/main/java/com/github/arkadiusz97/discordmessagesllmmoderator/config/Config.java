@@ -12,10 +12,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.client.JdkClientHttpRequestFactory;
-import org.springframework.http.client.reactive.JdkClientHttpConnector;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.reactive.function.client.WebClient;
 
 import java.net.http.HttpClient;
 import java.time.Duration;
@@ -37,10 +34,14 @@ public class Config {
 
     @Bean
     public SimpleRabbitListenerContainerFactory rabbitListenerContainerFactory(ConnectionFactory connectionFactory,
-            Jackson2JsonMessageConverter converter, @Value("${app.queue-prefetch-count}") Integer queuePrefetchCount) {
+            Jackson2JsonMessageConverter converter, @Value("${app.queue-prefetch-count}") Integer queuePrefetchCount,
+            @Value("${app.max-concurrent-consumers}") Integer maxConcurrentConsumers,
+            @Value("${app.concurrent-consumers}") Integer concurrentConsumers) {
         var factory = new SimpleRabbitListenerContainerFactory();
         factory.setConnectionFactory(connectionFactory);
         factory.setPrefetchCount(queuePrefetchCount);
+        factory.setMaxConcurrentConsumers(maxConcurrentConsumers);
+        factory.setConcurrentConsumers(concurrentConsumers);
         factory.setAcknowledgeMode(AcknowledgeMode.MANUAL);
         factory.setMessageConverter(converter);
         return factory;
@@ -57,17 +58,6 @@ public class Config {
                 .build()
                 .login()
                 .block();
-    }
-
-    @Bean
-    public ThreadPoolTaskExecutor taskExecutor(
-            @Value("${app.thread-pool-size-for-messages-handler}") int threadPoolSizeForMessagesHandler
-    ) {
-        ThreadPoolTaskExecutor exec = new ThreadPoolTaskExecutor();
-        exec.setVirtualThreads(true);
-        exec.setThreadNamePrefix("discord-messages-handler-");
-        exec.setCorePoolSize(threadPoolSizeForMessagesHandler);
-        return exec;
     }
 
     @Bean
