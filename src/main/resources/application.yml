@@ -47,6 +47,5 @@ spring:
       mail:
         smtp:
           auth: true
-        #debug: true
   application:
     name: discord-messages-llm-moderator

@@ -36,11 +36,8 @@ public class DiscordMessagesHandler implements MessagesHandler {
     }
 
     public void handle(QueueMessage in, Message message, Channel channel) throws Exception {
-        log.debug("Message content: {}", in.messageContent());
-        log.debug("Message id: {}", in.messageId());
-        log.debug("Channel id: {}", in.channelId());
-        log.debug("Server id: {}", in.serverId());
-        log.debug("User id: {}", in.userId());
+        log.debug("Message content: {}, Message id: {}, Channel id: {}, Server id: {}, User id: {}",
+                in.messageContent(), in.messageId(), in.channelId(), in.serverId(), in.userId());
         PromptResponse promptResponse;
         try {
             promptResponse = llmClient.sendPrompt(

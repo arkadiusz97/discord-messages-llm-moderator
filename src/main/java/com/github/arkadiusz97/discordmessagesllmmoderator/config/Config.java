@@ -2,6 +2,8 @@ package com.github.arkadiusz97.discordmessagesllmmoderator.config;
 
 import discord4j.core.DiscordClientBuilder;
 import discord4j.core.GatewayDiscordClient;
+import discord4j.gateway.intent.Intent;
+import discord4j.gateway.intent.IntentSet;
 import org.springframework.amqp.core.AcknowledgeMode;
 import org.springframework.amqp.core.Queue;
 import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
@@ -56,6 +58,12 @@ public class Config {
     public GatewayDiscordClient gatewayDiscordClient(@Value("${app.discord-bot-token}") String discordBotToken) {
         return DiscordClientBuilder.create(discordBotToken)
                 .build()
+                .gateway()
+                .setEnabledIntents(IntentSet.of(
+                        Intent.GUILDS,
+                        Intent.GUILD_MESSAGES,
+                        Intent.MESSAGE_CONTENT
+                ))
                 .login()
                 .block();
     }
